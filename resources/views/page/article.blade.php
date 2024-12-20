@@ -39,6 +39,11 @@
             <button class="btn btn-success btn-md mb-5" data-toggle="modal" data-target = '#demoModal' id="createButton">Create</button>
         </div>
         <div class="container border border-1 p-5">
+            <div class="d-flex gap-10 gap-5 mb-3">
+                <input type="text" id="search-email" placeholder="Search by Email">
+                <input type="text" id="search-title" placeholder="Search by Title">
+                <input type="text" id="search-article" placeholder="Search by Article">
+            </div>
             <table class="table  table-hover align-middle data-table" id = 'drawtable'>
                 <thead>
                     <tr>
@@ -142,36 +147,72 @@ console.log($.fn.tooltip.Constructor.VERSION);
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-
+    var table;
     function getArticle() {
         console.log(321231231);
         initial_data = [];
-        $("#drawtable").DataTable({
+       
+       table =  $("#drawtable").DataTable({
             processing: true,
             serverSiding: true,
             responsive: true,
-            ajax: '{{route('articles.get')}}',
+            searching: false,
+            ajax: {
+                url:  "{{ route('articles.get') }}",
+                data: function(d) {
+                    d.article = $("#search-article").val();
+                    d.title = $("#search-email").val();
+                    d.email = $("#search-email").val();
+                }
+                // data: function(d) {
+                //     d['columns[0][search][value]'] = 
+                //     d['columns[1][search][value]'] = 
+                //     d['columns[2][search][value]'] = 
+                // }
+            },
             order: [[1, 'asc']],
             columns: [
-                    // { data: 'id', name: 'id' },
                     { data: 'email', name: 'email' },
                     { data: 'title', name: 'title' },
                     { data: 'article', name: 'article' },
-                    {data: 'action', name: 'action', orderable: false, searchable: false},
+                    { data: 'action', name: 'action', orderable: false, searchable: false},
                 ]
         })
-        // $.ajax({
-        //     type: 'GET', // Use curly braces for object definition
-        //     url: "/articles.get",
-        //     success: function(response) {
-        //         initial_data = response;
-        //         displayArticle(response);
-        //     },
-        //     error: function(xhr) {
-        //         console.log('Error', xhr.responseText);
-        //     }
-        // });
+        table.draw();
     }
+    // document.getElementById("search-email").onChange()
+    $("#search-email, #search-article, #search-title").keyup(function() {
+        console.log('Search filter changed...');
+        
+        table.destroy();
+        table = $("#drawtable").DataTable({
+            processing: true,
+            serverSiding: true,
+            searching: false,
+            responsive: true,
+            ajax: {
+                url:  "{{ route('articles.get') }}",
+                data: function(d) {
+                    d.article = $("#search-article").val();
+                    d.title = $("#search-title").val();
+                    d.email = $("#search-email").val();
+                }
+                // data: function(d) {
+                //     d['columns[0][search][value]'] = 
+                //     d['columns[1][search][value]'] = 
+                //     d['columns[2][search][value]'] = 
+                // }
+            },
+            order: [[1, 'asc']],
+            columns: [
+                    { data: 'email', name: 'email' },
+                    { data: 'title', name: 'title' },
+                    { data: 'article', name: 'article' },
+                    { data: 'action', name: 'action', orderable: false, searchable: false},
+                ]
+        })
+        table.draw();  // Redraw the table with updated search parameters
+    });
     getArticle();
 
     function displayArticle(article) {
@@ -254,7 +295,6 @@ console.log($.fn.tooltip.Constructor.VERSION);
             url: form.attr('action'),
             data: form.serialize(),
             success: function(response) {
-                // $('#demoModal').modal('hide');
                 $('#closeModal').click();
                 toastr.options.timeOut = 10000;
                 toastr.success(response.message);

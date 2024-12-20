@@ -46,7 +46,11 @@ class ArticleController extends Controller
         // return back()-> with($notification);
     }
 
-    public function getArticles() {
+    public function getArticles(Request $request) {
+        // if($request->ajax() {
+
+        // })
+        // echo $request->title;
         $data = Article::select('*');
         return DataTables::of($data)
             ->addIndexColumn()
@@ -56,6 +60,43 @@ class ArticleController extends Controller
                 ')">Delete</button></div>';
 
                 return $btn;
+            })
+            // ->filter(function ($instance) use ($request) {
+            //     if ($request->get('approved') == '0' || $request->get('approved') == '1') {
+            //         $instance->where('approved', $request->get('approved'));
+            //     }    
+            //     if (!empty($request->get('search'))) {
+            //         $instance->where(function($w) use($request){
+            //             $search = $request->get('search');
+            //             $w->where('name', 'LIKE', "%$search%")
+            //                 ->orWhere('description', 'LIKE', "%$search%")
+            //                 ->orWhere('price', 'LIKE', "%$search%");
+            //         });
+            //     }
+            // })
+            
+            ->filter(function ($instance) use ($request) {
+                
+                if (!empty($request->get('title'))) {
+                    $instance->where(function($w) use($request){
+                        $search = $request->get('title');
+                        $w->where('title', 'LIKE', "%$search%");
+                    });
+                };
+                
+                if (!empty($request->get('article'))) {
+                    $instance->where(function($w) use($request){
+                        $search = $request->get('article');
+                        $w->where('article', 'LIKE', "%$search%");
+                    });
+                };
+                
+                if (!empty($request->get('email'))) {
+                    $instance->where(function($w) use($request){
+                        $search = $request->get('email');
+                        $w->where('email', 'LIKE', "%$search%");
+                    });
+                };
             })
             ->rawColumns(['action'])
             ->make(true);
